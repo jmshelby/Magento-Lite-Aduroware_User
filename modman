@@ -1,3 +1,4 @@
 code									app/code/community/Aduroware/User
 layout/frontend/user.xml				app/design/frontend/base/default/layout/user.xml
+template/frontend/user					app/design/frontend/base/default/template/user
 Aduroware_User.xml						app/etc/modules/Aduroware_User.xml

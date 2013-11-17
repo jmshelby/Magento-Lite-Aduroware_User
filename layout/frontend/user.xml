@@ -1,0 +1,211 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+
+<!--
+Default layout, loads most of the pages
+-->
+
+    <default>
+        <!-- Aduroware_User -->
+        <reference name="top.links">
+            <action method="addLink" translate="label title" module="user"><label>My Account</label><url helper="user/getAccountUrl"/><title>My Account</title><prepare/><urlParams/><position>10</position></action>
+        </reference>
+    </default>
+
+<!--
+Load this update on every page when user is logged in
+-->
+
+    <user_logged_in>
+        <reference name="top.links">
+            <action method="addLink" translate="label title" module="user"><label>Log Out</label><url helper="user/getLogoutUrl"/><title>Log Out</title><prepare/><urlParams/><position>100</position></action>
+        </reference>
+    </user_logged_in>
+
+<!--
+Load this update on every page when user is logged out
+-->
+
+    <user_logged_out>
+        <reference name="top.links">
+            <action method="addLink" translate="label title" module="user"><label>Log In</label><url helper="user/getLoginUrl"/><title>Log In</title><prepare/><urlParams/><position>100</position></action>
+        </reference>
+    </user_logged_out>
+
+<!--
+Layout for user login page
+-->
+
+    <user_account_login translate="label">
+        <label>User Account Login Form</label>
+        <!-- Aduroware_User -->
+        <remove name="right"/>
+        <remove name="left"/>
+
+        <reference name="root">
+            <action method="setTemplate"><template>page/1column.phtml</template></action>
+        </reference>
+        <reference name="content">
+            <block type="user/form_login" name="user_form_login" template="user/form/login.phtml" />
+        </reference>
+    </user_account_login>
+
+<!--
+Layout for user log out page
+-->
+
+    <user_account_logoutsuccess translate="label">
+        <label>User Account Logout Success</label>
+        <!-- Aduroware_User -->
+        <remove name="right"/>
+        <remove name="left"/>
+
+        <reference name="root">
+            <action method="setTemplate"><template>page/1column.phtml</template></action>
+        </reference>
+        <reference name="content">
+            <block type="core/template" name="user_logout" template="user/logout.phtml"/>
+        </reference>
+    </user_account_logoutsuccess>
+
+<!--
+New user registration
+-->
+
+    <user_account_create translate="label">
+        <label>User Account Registration Form</label>
+        <!-- Aduroware_User -->
+        <remove name="right"/>
+        <remove name="left"/>
+
+        <reference name="root">
+            <action method="setTemplate"><template>page/1column.phtml</template></action>
+        </reference>
+        <reference name="content">
+            <block type="user/form_register" name="user_form_register" template="user/form/register.phtml">
+                <block type="page/html_wrapper" name="user.form.register.fields.before" as="form_fields_before" translate="label">
+                    <label>Form Fields Before</label>
+                </block>
+            </block>
+        </reference>
+    </user_account_create>
+
+    <user_account_forgotpassword translate="label">
+        <label>User Forgot Password Form</label>
+        <remove name="right"/>
+        <remove name="left"/>
+
+        <reference name="head">
+            <action method="setTitle" translate="title" module="user"><title>Forgot Your Password</title></action>
+        </reference>
+        <reference name="root">
+            <action method="setTemplate"><template>page/1column.phtml</template></action>
+            <action method="setHeaderTitle" translate="title" module="user"><title>Password forgotten</title></action>
+        </reference>
+        <reference name="content">
+            <!--<block type="core/template" name="forgotPassword" template="user/form/forgotpassword.phtml"/>-->
+            <block type="user/account_forgotpassword" name="forgotPassword" template="user/form/forgotpassword.phtml" />
+        </reference>
+    </user_account_forgotpassword>
+
+    <user_account_resetpassword translate="label">
+        <label>Reset a Password</label>
+        <remove name="right"/>
+        <remove name="left"/>
+
+        <reference name="head">
+            <action method="setTitle" translate="title" module="user">
+                <title>Reset a Password</title>
+            </action>
+        </reference>
+        <reference name="root">
+            <action method="setTemplate">
+                <template>page/1column.phtml</template>
+            </action>
+            <action method="setHeaderTitle" translate="title" module="user">
+                <title>Reset a Password</title>
+            </action>
+        </reference>
+        <reference name="content">
+            <block type="user/account_resetpassword" name="resetPassword" template="user/form/resetforgottenpassword.phtml"/>
+        </reference>
+    </user_account_resetpassword>
+
+    <user_account_confirmation>
+        <remove name="right"/>
+        <remove name="left"/>
+
+        <reference name="root">
+            <action method="setTemplate"><template>page/1column.phtml</template></action>
+            <action method="setHeaderTitle" translate="title" module="user"><title>Send confirmation link</title></action>
+        </reference>
+        <reference name="content">
+            <block type="core/template" name="accountConfirmation" template="user/form/confirmation.phtml"/>
+        </reference>
+    </user_account_confirmation>
+
+    <user_account_edit translate="label">
+        <label>User Account Edit Form</label>
+        <update handle="user_account"/>
+        <reference name="root">
+            <action method="setHeaderTitle" translate="title" module="user"><title>Edit Account Info</title></action>
+        </reference>
+        <reference name="my.account.wrapper">
+            <block type="user/form_edit" name="user_edit" template="user/form/edit.phtml"/>
+        </reference>
+
+        <reference name="left">
+          <action method="unsetChild"><name>left.permanent.callout</name></action>
+        </reference>
+    </user_account_edit>
+
+<!--
+User account pages, rendered for all tabs in dashboard
+-->
+
+    <user_account translate="label">
+        <label>User My Account (All Pages)</label>
+        <reference name="root">
+            <action method="setTemplate"><template>page/2columns-left.phtml</template></action>
+        </reference>
+
+        <reference name="content">
+            <block type="page/html_wrapper" name="my.account.wrapper" translate="label">
+                <label>My Account Wrapper</label>
+                <action method="setElementClass"><value>my-account</value></action>
+            </block>
+        </reference>
+
+        <reference name="left">
+            <block type="user/account_navigation" name="user_account_navigation" before="-" template="user/account/navigation.phtml">
+                <action method="addLink" translate="label" module="user"><name>account</name><path>user/account/</path><label>Account Dashboard</label></action>
+                <action method="addLink" translate="label" module="user"><name>account_edit</name><path>user/account/edit/</path><label>Account Information</label></action>
+            </block>
+            <block type="catalog/product_compare_sidebar" name="catalog.compare.sidebar" template="catalog/product/compare/sidebar.phtml"/>
+            <remove name="tags_popular"/>
+
+        </reference>
+    </user_account>
+
+<!--
+User account home dashboard layout
+-->
+
+    <user_account_index translate="label">
+        <label>User My Account Dashboard</label>
+        <update handle="user_account"/>
+        <!-- Aduroware_User -->
+        <reference name="root">
+            <action method="setTemplate"><template>page/2columns-left.phtml</template></action>
+        </reference>
+        <reference name="my.account.wrapper">
+            <block type="user/account_dashboard" name="user_account_dashboard" template="user/account/dashboard.phtml">
+                <block type="user/account_dashboard_hello" name="user_account_dashboard_hello" as="hello" template="user/account/dashboard/hello.phtml"/>
+                <block type="core/template" name="user_account_dashboard_top" as="top" />
+                <block type="user/account_dashboard_info" name="user_account_dashboard_info" as="info" template="user/account/dashboard/info.phtml"/>
+            </block>
+        </reference>
+
+    </user_account_index>
+
+</layout>

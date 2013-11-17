@@ -1,0 +1,257 @@
+<?php
+/**
+ * User resource setup model
+ *
+ * @category    Mage
+ * @package     Aduroware_User
+ * @author      Magento Core Team <core@magentocommerce.com>
+ */
+class Aduroware_User_Model_Resource_Setup extends Mage_Eav_Model_Entity_Setup
+{
+    /**
+     * Prepare user attribute values to save in additional table
+     *
+     * @param array $attr
+     * @return array
+     */
+    protected function _prepareValues($attr)
+    {
+        $data = parent::_prepareValues($attr);
+        $data = array_merge($data, array(
+            'is_visible'                => $this->_getValue($attr, 'visible', 1),
+            'is_system'                 => $this->_getValue($attr, 'system', 1),
+            'input_filter'              => $this->_getValue($attr, 'input_filter', null),
+            'multiline_count'           => $this->_getValue($attr, 'multiline_count', 0),
+            'validate_rules'            => $this->_getValue($attr, 'validate_rules', null),
+            'data_model'                => $this->_getValue($attr, 'data', null),
+            'sort_order'                => $this->_getValue($attr, 'position', 0)
+        ));
+
+        return $data;
+    }
+
+    /**
+     * Add user attributes to user forms
+     *
+     * @return void
+     */
+    public function installUserForms()
+    {
+        $user           = (int)$this->getEntityTypeId('user');
+
+        $attributeIds       = array();
+        $select = $this->getConnection()->select()
+            ->from(
+                array('ea' => $this->getTable('eav/attribute')),
+                array('entity_type_id', 'attribute_code', 'attribute_id'))
+            ->where('ea.entity_type_id = ?', $user);
+        foreach ($this->getConnection()->fetchAll($select) as $row) {
+            $attributeIds[$row['entity_type_id']][$row['attribute_code']] = $row['attribute_id'];
+        }
+
+        $data       = array();
+        $entities   = $this->getDefaultEntities();
+        $attributes = $entities['user']['attributes'];
+        foreach ($attributes as $attributeCode => $attribute) {
+            $attributeId = $attributeIds[$user][$attributeCode];
+            $attribute['system'] = isset($attribute['system']) ? $attribute['system'] : true;
+            $attribute['visible'] = isset($attribute['visible']) ? $attribute['visible'] : true;
+            if ($attribute['system'] != true || $attribute['visible'] != false) {
+                $usedInForms = array(
+                    'user_account_create',
+                    'user_account_edit',
+                    'checkout_register',
+                );
+                if (!empty($attribute['adminhtml_only'])) {
+                    $usedInForms = array('adminhtml_user');
+                } else {
+                    $usedInForms[] = 'adminhtml_user';
+                }
+                if (!empty($attribute['admin_checkout'])) {
+                    $usedInForms[] = 'adminhtml_checkout';
+                }
+                foreach ($usedInForms as $formCode) {
+                    $data[] = array(
+                        'form_code'     => $formCode,
+                        'attribute_id'  => $attributeId
+                    );
+                }
+            }
+        }
+
+        if ($data) {
+            $this->getConnection()->insertMultiple($this->getTable('user/form_attribute'), $data);
+        }
+    }
+
+    /**
+     * Retreive default entities: user
+     *
+     * @return array
+     */
+    public function getDefaultEntities()
+    {
+        $entities = array(
+            'user'                       => array(
+                'entity_model'                   => 'user/user',
+                'attribute_model'                => 'user/attribute',
+                'table'                          => 'user/entity',
+                'increment_model'                => 'eav/entity_increment_numeric',
+                'additional_attribute_table'     => 'user/eav_attribute',
+                'entity_attribute_collection'    => 'user/attribute_collection',
+                'attributes'                     => array(
+                    'website_id'         => array(
+                        'type'               => 'static',
+                        'label'              => 'Associate to Website',
+                        'input'              => 'select',
+                        'source'             => 'user/user_attribute_source_website',
+                        'backend'            => 'user/user_attribute_backend_website',
+                        'sort_order'         => 10,
+                        'position'           => 10,
+                        'adminhtml_only'     => 1,
+                    ),
+                    'store_id'           => array(
+                        'type'               => 'static',
+                        'label'              => 'Create In',
+                        'input'              => 'select',
+                        'source'             => 'user/user_attribute_source_store',
+                        'backend'            => 'user/user_attribute_backend_store',
+                        'sort_order'         => 20,
+                        'visible'            => false,
+                        'adminhtml_only'     => 1,
+                    ),
+                    'created_in'         => array(
+                        'type'               => 'varchar',
+                        'label'              => 'Created From',
+                        'input'              => 'text',
+                        'required'           => false,
+                        'sort_order'         => 20,
+                        'position'           => 20,
+                        'adminhtml_only'     => 1,
+                    ),
+                    'prefix'             => array(
+                        'type'               => 'varchar',
+                        'label'              => 'Prefix',
+                        'input'              => 'text',
+                        'required'           => false,
+                        'sort_order'         => 30,
+                        'visible'            => false,
+                        'system'             => false,
+                        'position'           => 30,
+                    ),
+                    'firstname'          => array(
+                        'type'               => 'varchar',
+                        'label'              => 'First Name',
+                        'input'              => 'text',
+                        'sort_order'         => 40,
+                        'validate_rules'     => 'a:2:{s:15:"max_text_length";i:255;s:15:"min_text_length";i:1;}',
+                        'position'           => 40,
+                    ),
+                    'middlename'         => array(
+                        'type'               => 'varchar',
+                        'label'              => 'Middle Name/Initial',
+                        'input'              => 'text',
+                        'required'           => false,
+                        'sort_order'         => 50,
+                        'visible'            => false,
+                        'system'             => false,
+                        'position'           => 50,
+                    ),
+                    'lastname'           => array(
+                        'type'               => 'varchar',
+                        'label'              => 'Last Name',
+                        'input'              => 'text',
+                        'sort_order'         => 60,
+                        'validate_rules'     => 'a:2:{s:15:"max_text_length";i:255;s:15:"min_text_length";i:1;}',
+                        'position'           => 60,
+                    ),
+                    'suffix'             => array(
+                        'type'               => 'varchar',
+                        'label'              => 'Suffix',
+                        'input'              => 'text',
+                        'required'           => false,
+                        'sort_order'         => 70,
+                        'visible'            => false,
+                        'system'             => false,
+                        'position'           => 70,
+                    ),
+                    'email'              => array(
+                        'type'               => 'static',
+                        'label'              => 'Email',
+                        'input'              => 'text',
+                        'sort_order'         => 80,
+                        'validate_rules'     => 'a:1:{s:16:"input_validation";s:5:"email";}',
+                        'position'           => 80,
+                        'admin_checkout'    => 1
+                    ),
+                    'group_id'           => array(
+                        'type'               => 'static',
+                        'label'              => 'Group',
+                        'input'              => 'select',
+                        'source'             => 'user/user_attribute_source_group',
+                        'sort_order'         => 25,
+                        'position'           => 25,
+                        'adminhtml_only'     => 1,
+                        'admin_checkout'     => 1,
+                    ),
+                    'dob'                => array(
+                        'type'               => 'datetime',
+                        'label'              => 'Date Of Birth',
+                        'input'              => 'date',
+                        'frontend'           => 'eav/entity_attribute_frontend_datetime',
+                        'backend'            => 'eav/entity_attribute_backend_datetime',
+                        'required'           => false,
+                        'sort_order'         => 90,
+                        'visible'            => false,
+                        'system'             => false,
+                        'input_filter'       => 'date',
+                        'validate_rules'     => 'a:1:{s:16:"input_validation";s:4:"date";}',
+                        'position'           => 90,
+                        'admin_checkout'     => 1,
+                    ),
+                    'password_hash'      => array(
+                        'type'               => 'varchar',
+                        'input'              => 'hidden',
+                        'backend'            => 'user/user_attribute_backend_password',
+                        'required'           => false,
+                        'sort_order'         => 81,
+                        'visible'            => false,
+                    ),
+                    'confirmation'       => array(
+                        'type'               => 'varchar',
+                        'label'              => 'Is Confirmed',
+                        'input'              => 'text',
+                        'required'           => false,
+                        'sort_order'         => 85,
+                        'visible'            => false,
+                    ),
+                    'created_at'         => array(
+                        'type'               => 'static',
+                        'label'              => 'Created At',
+                        'input'              => 'date',
+                        'required'           => false,
+                        'sort_order'         => 86,
+                        'visible'            => false,
+                        'system'             => false,
+                    ),
+                    'gender'             => array(
+                        'type'               => 'int',
+                        'label'              => 'Gender',
+                        'input'              => 'select',
+                        'source'             => 'eav/entity_attribute_source_table',
+                        'required'           => false,
+                        'sort_order'         => 110,
+                        'visible'            => false,
+                        'system'             => false,
+                        'validate_rules'     => 'a:0:{}',
+                        'position'           => 110,
+                        'admin_checkout'     => 1,
+                        'option'             => array('values' => array('Male', 'Female'))
+                    ),
+                )
+            ),
+
+        );
+        return $entities;
+    }
+}

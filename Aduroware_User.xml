@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Aduroware_User>
+            <active>true</active>
+            <codePool>community</codePool>
+            <depends>
+                <Mage_Eav/>
+                <Mage_Dataflow/>
+                <Mage_Directory/>
+            </depends>
+        </Aduroware_User>
+    </modules>
+</config>

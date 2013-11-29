@@ -10,7 +10,6 @@ class Aduroware_User_AccountController extends Mage_Core_Controller_Front_Action
 
     public function preDispatch()
     {
-Mage::log(__METHOD__.": you're in!");
         // a brute-force protection here would be nice
 
         parent::preDispatch();
@@ -50,7 +49,6 @@ Mage::log(__METHOD__.": you're in!");
 
     public function indexAction()
     {
-Mage::log(__METHOD__.": you're in!");
         $this->loadLayout();
         $this->_initLayoutMessages('user/session');
 
